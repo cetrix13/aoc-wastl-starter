@@ -4,7 +4,7 @@ namespace AoC;
 class FrequencyCalc
 {
     private $list = [];
-    const FILE_PATH = __DIR__ . "/resourses/frequency_list.txt";
+    const FILE_PATH = __DIR__ . "/resources/frequency_list.txt";
 
     public function __construct()
     {
