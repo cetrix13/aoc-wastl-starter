@@ -35,7 +35,47 @@ class Checksum
         }
         return $countDouble * $countTripple;
     }
+
+    private function splitIntoLetters($arr)
+    {
+        $lettersList = [];
+
+        foreach ($arr as $item) {
+            array_push($lettersList, str_split($item));
+        }
+        return $lettersList;
+    }
+
+    public function findCorrectBoxes()
+    {
+        $correctBoxes = [];
+        $lettersList = $this->splitIntoLetters($this->list);
+        $length = count($lettersList);
+
+        for ($i=0; $i < $length - 1 ; $i++) {
+            for ($j = $i + 1; $j < $length; $j++) {
+                $counter = 0;
+                $countDifferences = 0;
+
+                foreach ($lettersList[$i] as $letter) {
+                    if ($letter != $lettersList[$j][$counter]) {
+                        $countDifferences++;
+                    }
+                    $counter++;
+                }
+                if ($countDifferences == 1) {
+                    array_push($correctBoxes, implode("", $lettersList[$i]));
+                    array_push($correctBoxes, implode("", $lettersList[$j]));
+                }
+            }
+        }
+        return $correctBoxes;
+    }
+
 }
 
 $obj = new Checksum();
-echo "Checksum of boxs' IDs equals " . $obj->checksumCalc();
+
+echo "Checksum of boxs' IDs equals " . $obj->checksumCalc() . "\n";
+echo "Two correct boxes are " . implode(",", $obj->findCorrectBoxes()) . "\n";
+
