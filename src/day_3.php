@@ -5,6 +5,7 @@ error_reporting(0);
 class Sheet
 {
     private $list = [];
+    private $overlaped = [];
     const FILE_PATH = __DIR__ . "/resources/claims_list.txt";
 
     public function __construct()
@@ -40,13 +41,13 @@ class Sheet
         foreach ($claims as $claim) {
             foreach (range(1, $claim['w']) as $xi) {
                 foreach (range(1, $claim['h']) as $yi) {
-                    $overlap[$claim['x'] + $xi][$claim['y'] + $yi] += 1;
+                    $this->overlaped[$claim['x'] + $xi][$claim['y'] + $yi] += 1;
                 }
             }
         }
 
         // filter through coordinates to find overlaps
-        foreach ($overlap as $arr1) {
+        foreach ($this->overlaped as $arr1) {
             foreach ($arr1 as $val) {
                 if ($val > 1) {
                     $totalAreaOverlaps += 1;
@@ -56,7 +57,31 @@ class Sheet
 
          return $totalAreaOverlaps;
     }
+
+    /**
+     * @param  array
+     * @return string
+     */
+    public function findClaimWithoutOverlaps($claims)
+    {
+        $all_claims_ids = [];
+        $overlaped_claims_ids = [];
+
+        foreach ($claims as $claim) {
+            array_push($all_claims_ids, $claim['id']);
+            foreach (range(1, $claim['w']) as $xi) {
+                foreach (range(1, $claim['h']) as $yi) {
+                    if ($this->overlaped[$claim['x'] + $xi][$claim['y'] + $yi] > 1) {
+                        array_push($overlaped_claims_ids, $claim['id']);
+                    }
+                }
+            }
+        }
+
+        return current(array_diff($all_claims_ids, $overlaped_claims_ids));
+    }
 }
 
 $obj = new Sheet();
-echo "Total area of overlaps is " . $obj->countOverlaps($obj->parseInput()) . " inches";
+echo "Total area of overlaps is " . $obj->countOverlaps($obj->parseInput()) . " inches \n";
+echo "Claim without overlaps has id = " . $obj->findClaimWithoutOverlaps($obj->parseInput()) . "\n";
