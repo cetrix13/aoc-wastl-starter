@@ -52,7 +52,7 @@ class Checksum
         $lettersList = $this->splitIntoLetters($this->list);
         $length = count($lettersList);
 
-        for ($i=0; $i < $length - 1 ; $i++) {
+        for ($i=0; $i < $length - 1; $i++) {
             for ($j = $i + 1; $j < $length; $j++) {
                 $counter = 0;
                 $countDifferences = 0;
