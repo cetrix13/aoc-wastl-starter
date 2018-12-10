@@ -16,7 +16,10 @@ class GuardDuty
         $this->list = file(self::FILE_PATH, FILE_IGNORE_NEW_LINES) or die('File is not found');
     }
 
-    public function sortInput()
+    /**
+     * @return array
+     */
+    public function parseAndSortInput()
     {
         $pattern = '/(\d{4}-\d{2}-\d{2})\s(\d{2}):(\d{2})\]\s(.*)/';
         $matches = [];
@@ -28,24 +31,28 @@ class GuardDuty
         }
 
         $dates = [];
-        $hours = [];
+        //$hours = [];
         $minutes = [];
         foreach ($sortedList as $key => $row) {
-            $hours[$key] = $row['h'];
+            //$hours[$key] = $row['h'];
             $dates[$key] = $row['date'];
-            $minutes[$key] = (int)$row['m'] + (int)$row['h'];
+            $minutes[$key] = (int)$row['m'];
         }
         array_multisort($dates, SORT_ASC, $minutes, SORT_ASC, $sortedList);
 
         return $sortedList;
     }
 
+    /**
+     * @param array $dutyList
+     * @return array
+     */
     public function findMostSleepingGuard($dutyList)
     {
         $guardID = "";
         $start = 0;
-        $guards = [];
 
+        // Count number of times the guard slept on each minute
         foreach ($dutyList as $item) {
             switch (true) {
                 case preg_match('/Guard (#\d+) begins shift/', $item['s'], $matches):
@@ -76,8 +83,10 @@ class GuardDuty
             }
         }
 
-        return $guardID . " (the most slept minute  = ". $sleepMinute . ")";
+        return ["guardID" => $guardID, "minute" => $sleepMinute];
     }
 }
 
-echo "The guard who was sleeping the most has ID = " . $obj->findMostSleepingGuard($obj->sortInput());
+$obj = new GuardDuty();
+extract($obj->findMostSleepingGuard($obj->parseAndSortInput()));
+echo "The guard who was sleeping the most has ID = " . $guardID . " (the most slept minute = " . $minute;
