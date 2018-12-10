@@ -31,12 +31,10 @@ class GuardDuty
         }
 
         $dates = [];
-        //$hours = [];
         $minutes = [];
         foreach ($sortedList as $key => $row) {
-            //$hours[$key] = $row['h'];
             $dates[$key] = $row['date'];
-            $minutes[$key] = (int)$row['m'];
+            $minutes[$key] = (int)$row['m'] + (int)$row['h']; // add hours to adjust for a day shift
         }
         array_multisort($dates, SORT_ASC, $minutes, SORT_ASC, $sortedList);
 
@@ -64,13 +62,18 @@ class GuardDuty
                 case preg_match('/wakes up/', $item['s']):
                     $end = $item['m'];
                     foreach (range($start, $end - 1) as $minute) {
-                        $sleepMatrix[$guardID][$minute] +=1;
+                        $sleepMatrix[$guardID][$minute] += 1;
                     }
                     break;
             }
         }
 
-        // find the minute the guard slept the most
+        $totalMinutes = [];
+        foreach ($sleepMatrix as $key => $val) {
+            $totalMinutes[$key]= array_sum($val);
+        }
+        arsort($totalMinutes, SORT_ASC);
+
         $guardID = 0;
         $sleepMinute = 0;
         foreach ($sleepMatrix as $key => $val) {
@@ -83,10 +86,12 @@ class GuardDuty
             }
         }
 
-        return ["guardID" => $guardID, "minute" => $sleepMinute];
+        return ["guardID" => $guardID, "minute" => $sleepMinute, "laziestGuard" => key($totalMinutes)];
     }
 }
 
 $obj = new GuardDuty();
 extract($obj->findMostSleepingGuard($obj->parseAndSortInput()));
-echo "The guard who was sleeping the most has ID = " . $guardID . " (the most slept minute = " . $minute;
+echo "The guard which was sleeping the most has ID = " . $laziestGuard . "\n";
+echo "The guard which is most frequently asleep on the same minute has ID = " . $guardID .
+" (the most slept minute is " . $minute;
