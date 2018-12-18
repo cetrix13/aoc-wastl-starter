@@ -1,16 +1,12 @@
 <?php
 namespace AoC;
 
-ini_set('memory_limit', '1256M'); // large size of $matrix, need to optimize later
 error_reporting(0);
 
 class Coord
 {
     private $coords = [];
-    private $grid_max_x = 0;
-    private $grid_max_y = 0;
-    private $grid_min_x = 0;
-    private $grid_min_y = 0;
+    private $grid = [];
     const FILE_PATH = __DIR__ . '/resources/locations_list.txt';
 
     public function __construct()
@@ -22,22 +18,21 @@ class Coord
              preg_match($pattern, $item, $matches);
              $this->coords[] = ["x" => $matches[1], "y" => $matches[2]];
         }
-
         // Determine the size of the grid
-        $this->grid_max_x = max(array_column($this->coords, "x"));
-        $this->grid_max_y = max(array_column($this->coords, "y"));
-        $this->grid_min_x = min(array_column($this->coords, "x"));
-        $this->grid_min_y = min(array_column($this->coords, "y"));
+        $this->grid['max_x'] = max(array_column($this->coords, "x"));
+        $this->grid['max_y'] = max(array_column($this->coords, "y"));
+        $this->grid['min_x'] = min(array_column($this->coords, "x"));
+        $this->grid['min_y'] = min(array_column($this->coords, "y"));
     }
 
     public function sizeOfLargestArea()
     {
-        for ($i = $this->$grid_min_x; $i <= $this->grid_max_x; $i++) {
-            for ($j = $this->grid_min_y; $j <= $this->grid_max_y; $j++) {
+        for ($i = $this->$grid['min_x']; $i <= $this->grid['max_x']; $i++) {
+            for ($j = $this->grid['min_y']; $j <= $this->grid['max_y']; $j++) {
                 $distances = [];
                 foreach ($this->coords as $point) {
-                    $distPoint = self::caclManhattanDistance($point, ["x" => $i, "y" => $j]);
-                    $distances[] = [$point, $distPoint];
+                    $manhattanDistance = self::caclManhattanDistance($point, ["x" => $i, "y" => $j]);
+                    $distances[] = [$point, $manhattanDistance];
                 }
                 // check distances for duplicates, return unique
                 $matrix[$i][$j] = self::checkDuplicates($distances);
@@ -45,10 +40,11 @@ class Coord
         }
 
         $exclude = [];
-        for ($i = $this->$grid_min_x; $i <= $this->grid_max_x; $i++){
-            for ($j=$this->grid_min_y; $j <= $this->grid_max_y; $j++) {
+        for ($i = $this->$grid['min_x']; $i <= $this->grid['max_x']; $i++) {
+            for ($j = $this->grid['min_y']; $j <= $this->grid['max_y']; $j++) {
                 // if point is on the edge of the grid, then the area is infinity
-                if ($i == $this->grid_min_x || $i == $this->grid_max_x || $j == $this->grid_min_y || $j == $this->grid_max_y) {
+                if ($i == $this->grid['min_x'] || $i == $this->grid['max_x'] || $j == $this->grid['min_y']
+                    || $j == $this->grid['max_y']) {
                     if (!in_array($matrix[$i][$j], $exclude)) {
                         array_push($exclude, $matrix[$i][$j]);
                     }
@@ -62,20 +58,15 @@ class Coord
         }
 
         $largestArea = 0;
-        foreach ($notInfinityAreas as $value) {
-            foreach($value as $v) {
-                if ($v > $largestArea) {
-                    $largestArea = $v;
+        foreach ($notInfinityAreas as $area) {
+            foreach ($area as $count) {
+                if ($count > $largestArea) {
+                    $largestArea = $count;
                 }
             }
         }
 
         return $largestArea;
-    }
-
-    private function caclManhattanDistance($point1, $point2)
-    {
-        return abs($point1["x"] - $point2["x"]) + abs($point1["y"] - $point2["y"]);
     }
 
     private function checkDuplicates($distances)
@@ -91,7 +82,12 @@ class Coord
             }
         }
     }
+
+    private function caclManhattanDistance($point1, $point2)
+    {
+        return abs($point1["x"] - $point2["x"]) + abs($point1["y"] - $point2["y"]);
+    }
 }
 
 $obj = new Coord();
-echo "Size of largest area equals " . $obj->sizeOfLargestArea();
+print "Size of largest area equals " . $obj->sizeOfLargestArea();
