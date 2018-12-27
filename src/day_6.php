@@ -25,6 +25,25 @@ class Coord
         $this->grid['min_y'] = min(array_column($this->coords, "y"));
     }
 
+    public function findSafestRegion()
+    {
+        for ($i = $this->$grid['min_x']; $i <= $this->grid['max_x']; $i++) {
+            for ($j = $this->grid['min_y']; $j <= $this->grid['max_y']; $j++) {
+                $distances = [];
+                foreach ($this->coords as $point) {
+                    $manhattanDistance = self::caclManhattanDistance($point, ["x" => $i, "y" => $j]);
+                    $distances[] = [$point, $manhattanDistance];
+                }
+                // sum up all Manhattan distances for each point of grid
+                if (array_sum(array_column($distances, "1")) < 10000) {
+                    $matrix[$i][$j] = $distances[0];
+                }
+            }
+        }
+
+        return current(current(self::getNotInfinityAreas($matrix)));
+    }
+
     public function sizeOfLargestArea()
     {
         for ($i = $this->$grid['min_x']; $i <= $this->grid['max_x']; $i++) {
@@ -39,6 +58,20 @@ class Coord
             }
         }
 
+        $notInfinityAreas = self::getNotInfinityAreas($matrix);
+        $largestArea = 0;
+        foreach ($notInfinityAreas as $area) {
+            foreach ($area as $count) {
+                if ($count > $largestArea) {
+                    $largestArea = $count;
+                }
+            }
+        }
+
+        return $largestArea;
+    }
+
+    private function getNotInfinityAreas($matrix){
         $exclude = [];
         for ($i = $this->$grid['min_x']; $i <= $this->grid['max_x']; $i++) {
             for ($j = $this->grid['min_y']; $j <= $this->grid['max_y']; $j++) {
@@ -56,17 +89,7 @@ class Coord
                 }
             }
         }
-
-        $largestArea = 0;
-        foreach ($notInfinityAreas as $area) {
-            foreach ($area as $count) {
-                if ($count > $largestArea) {
-                    $largestArea = $count;
-                }
-            }
-        }
-
-        return $largestArea;
+        return $notInfinityAreas;
     }
 
     private function checkDuplicates($distances)
@@ -90,4 +113,5 @@ class Coord
 }
 
 $obj = new Coord();
-print "Size of largest area equals " . $obj->sizeOfLargestArea();
+print "Size of largest area equals " . $obj->sizeOfLargestArea() . "\n";
+print "Size of safest area equals " . $obj->findSafestRegion() . "\n";
