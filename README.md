@@ -1,6 +1,6 @@
 ## Participation in Advent of Code
 
-Solve different codeing challenges in PHP.
+Solve different coding challenges in PHP.
 
 
 
